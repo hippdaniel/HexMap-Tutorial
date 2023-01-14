@@ -9,13 +9,13 @@ public static class HexMetrics
 
     public static readonly Vector3[] Corners =
     {
-        new(0f, 0f, OuterRadius),
-        new(InnerRadius, 0f, 0.5f * OuterRadius),
-        new(InnerRadius, 0f, -0.5f * OuterRadius),
-        new(0f, 0f, -OuterRadius),
-        new(-InnerRadius, 0f, -0.5f * OuterRadius),
-        new(-InnerRadius, 0f, 0.5f * OuterRadius),
-        new(0f, 0f, OuterRadius),
+        new Vector3(0f, 0f, OuterRadius),
+        new Vector3(InnerRadius, 0f, 0.5f * OuterRadius),
+        new Vector3(InnerRadius, 0f, -0.5f * OuterRadius),
+        new Vector3(0f, 0f, -OuterRadius),
+        new Vector3(-InnerRadius, 0f, -0.5f * OuterRadius),
+        new Vector3(-InnerRadius, 0f, 0.5f * OuterRadius),
+        new Vector3(0f, 0f, OuterRadius),
     };
 
     public static Vector3 GetFirstCorner(HexDirection direction)
@@ -50,6 +50,6 @@ public static class HexMetrics
 
     public static Vector3 GetBridge(HexDirection direction)
     {
-        return (Corners[(int)direction] + Corners[(int)direction + 1]) * 0.5f * SolidFactor;
+        return (Corners[(int)direction] + Corners[(int)direction + 1]) * BlendFactor;
     }
 }

@@ -5,10 +5,6 @@ using UnityEngine.InputSystem;
 
 public class HexGrid : MonoBehaviour
 {
-    //TODO: Temporär
-    public InputAction onClick;
-    public InputAction mousePosition;
-    
     public int width = 6;
     public int height = 6;
 
@@ -18,7 +14,6 @@ public class HexGrid : MonoBehaviour
     public HexMesh hexMesh;
     
     public Color defaultColor = Color.white;
-    public Color touchedColor = Color.magenta;
 
     private HexCell[] _cells;
 
@@ -60,15 +55,15 @@ public class HexGrid : MonoBehaviour
                 cell.SetNeighbor(HexDirection.SE, _cells[i - width]);
                 if (x > 0)
                 {
-                    cell.SetNeighbor(HexDirection.SW, _cells[i-width-1]);
+                    cell.SetNeighbor(HexDirection.SW, _cells[i - width - 1]);
                 }
             }
             else 
             {
                 cell.SetNeighbor(HexDirection.SW, _cells[i - width]);
-                if (x > 0)
+                if (x < width - 1)
                 {
-                    cell.SetNeighbor(HexDirection.SE, _cells[i-width-1]);
+                    cell.SetNeighbor(HexDirection.SE, _cells[i - width + 1]);
                 }
             }
         }
@@ -80,39 +75,17 @@ public class HexGrid : MonoBehaviour
 
     private void Start()
     {
-        
         hexMesh.TriangulateMap(_cells);
-        onClick.performed += _ => HandleInput();
     }
 
-    private void OnEnable()
-    {
-        onClick.Enable();
-    }
-
-    private void OnDisable()
-    {
-        onClick.Disable();
-    }
-
-    private void HandleInput()
-    {
-        Ray inputRay = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if (Physics.Raycast(inputRay, out RaycastHit hit))
-        {
-            TouchCell(hit.point);
-        }
-    }
-
-    private void TouchCell(Vector3 position)
+    public void ColorCell(Vector3 position, Color color)
     {
         position = transform.InverseTransformPoint(position);
         HexCoordinates coordinates = HexCoordinates.FromPosition(position);
         int index = coordinates.X + coordinates.Z * width + coordinates.Z / 2;
         HexCell cell = _cells[index];
-        cell.color = touchedColor;
+        cell.color = color;
         hexMesh.TriangulateMap(_cells);
-        Debug.Log("touched at " + coordinates);
     }
     
     
