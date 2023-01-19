@@ -4,13 +4,19 @@ public static class HexMetrics
 {
     public const float OuterRadius = 10f;
     public const float InnerRadius = OuterRadius * 0.866025404f;
-    public const float SolidFactor = 0.75f;
+    public const float SolidFactor = 0.8f;
     public const float BlendFactor = 1f - SolidFactor;
-    public const float ElevationStep = 5f;
+    public const float ElevationStep = 3f;
     public const int   TerracesPerSlope = 2;
     public const int   TerraceSteps = TerracesPerSlope * 2 + 1;
     public const float HorizontalTerraceStepSize = 1f / (TerraceSteps);
     public const float VerticalTerraceStepSize = 1f / (TerracesPerSlope + 1);
+    public const int chunkSizeX = 5, chunkSizeZ = 5;
+    
+    public static Texture2D noiseSource;
+    public const float CellPerturbStrength = 4f;
+    public const float noiseScale = 0.003f;
+    public const float elevationPerturbStrength = 1.5f;
 
     public static readonly Vector3[] Corners =
     {
@@ -80,5 +86,18 @@ public static class HexMetrics
         int delta = elevation2 - elevation1;
         if (delta == 1 || delta == -1) return HexEdgeType.Slope;
         return HexEdgeType.Cliff;
+    }
+
+    public static Vector4 SampleNoise(Vector3 position)
+    {
+        return noiseSource.GetPixelBilinear(position.x * noiseScale, position.y * noiseScale);
+    }
+    
+    public static Vector3 Perturb(Vector3 position)
+    {
+        Vector4 sample = HexMetrics.SampleNoise(position);
+        position.x += (sample.x * 2f - 1) * HexMetrics.CellPerturbStrength;
+        position.z += (sample.z * 2f - 1) * HexMetrics.CellPerturbStrength;
+        return position;
     }
 }

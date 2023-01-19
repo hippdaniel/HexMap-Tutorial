@@ -17,13 +17,16 @@ public class HexCell : MonoBehaviour
             
             Vector3 position = transform.localPosition;
             position.y = value * HexMetrics.ElevationStep;
+            position.y += (HexMetrics.SampleNoise(position).y * 2f - 1f) * HexMetrics.elevationPerturbStrength;
             transform.localPosition = position;
 
             Vector3 uiPosition = uiRect.localPosition;
-            uiPosition.z = _elevation * -HexMetrics.ElevationStep;
+            uiPosition.z = -position.y;
             uiRect.localPosition = uiPosition;
         }
     }
+
+    public Vector3 Position => transform.position;
 
     [SerializeField] private HexCell[] neighbors = new HexCell[6];
 
