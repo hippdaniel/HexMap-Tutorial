@@ -73,7 +73,7 @@ public class HexGrid : MonoBehaviour
         HexCell cell = _cells[i] = Instantiate<HexCell>(cellPrefab);
         cell.transform.localPosition = position;
         cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
-        cell.color = defaultColor;
+        cell.Color = defaultColor;
 
         if (x > 0)
         {
@@ -128,5 +128,22 @@ public class HexGrid : MonoBehaviour
         HexCoordinates coordinates = HexCoordinates.FromPosition(position);
         int index = coordinates.X + coordinates.Z * _cellCountX + coordinates.Z / 2;
         return _cells[index];
+    }
+    
+    public HexCell GetCell(HexCoordinates coordinates)
+    {
+        int z = coordinates.Z;
+        if (z < 0 || z >= _cellCountZ) return null;
+        int x = coordinates.X + z / 2;
+        if (x < 0 || x >= _cellCountX) return null;
+        return _cells[x + z * _cellCountX];
+    }
+
+    public void ShowUI(bool visible)
+    {
+        for (int i = 0; i < _chunks.Length; i++)
+        {
+            _chunks[i].ShowUI(visible);
+        }
     }
 }
