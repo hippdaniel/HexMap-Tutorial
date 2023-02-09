@@ -2,8 +2,10 @@ using UnityEngine;
 
 public static class HexMetrics
 {
+    public const float outerToInner = 0.866025404f;
+    public const float innerToOuter = 1f / outerToInner;
     public const float OuterRadius = 10f;
-    public const float InnerRadius = OuterRadius * 0.866025404f;
+    public const float InnerRadius = OuterRadius * outerToInner;
     public const float SolidFactor = 0.8f;
     public const float BlendFactor = 1f - SolidFactor;
     public const float ElevationStep = 3f;
@@ -12,6 +14,8 @@ public static class HexMetrics
     public const float HorizontalTerraceStepSize = 1f / (TerraceSteps);
     public const float VerticalTerraceStepSize = 1f / (TerracesPerSlope + 1);
     public const int chunkSizeX = 5, chunkSizeZ = 5;
+    public const float streamBedElevationOffset = -1.75f;
+    public const float riverSurfaceElevationOffset = -0.5f;
     
     public static Texture2D noiseSource;
     public const float CellPerturbStrength = 4f;
@@ -47,6 +51,11 @@ public static class HexMetrics
     public static Vector3 GetSolidCorner(HexDirection direction, int cornerNumber)
     {
         return Corners[(int)direction + (cornerNumber-1)] * SolidFactor;
+    }
+
+    public static Vector3 GetSolidEdgeMiddle(HexDirection direction)
+    {
+        return (Corners[(int)direction] + Corners[(int)direction + 1]) * (0.5f * SolidFactor);
     }
 
     public static HexDirection Previous(this HexDirection direction)
@@ -95,9 +104,9 @@ public static class HexMetrics
     
     public static Vector3 Perturb(Vector3 position)
     {
-        Vector4 sample = HexMetrics.SampleNoise(position);
-        position.x += (sample.x * 2f - 1) * HexMetrics.CellPerturbStrength;
-        position.z += (sample.z * 2f - 1) * HexMetrics.CellPerturbStrength;
+        Vector4 sample = SampleNoise(position);
+        position.x += (sample.x * 2f - 1) * CellPerturbStrength;
+        position.z += (sample.z * 2f - 1) * CellPerturbStrength;
         return position;
     }
 }

@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.PlayerLoop;
 
+
 public class HexMapEditor : MonoBehaviour
 {
     public InputAction onClick;
@@ -21,6 +22,17 @@ public class HexMapEditor : MonoBehaviour
     private Camera _mainCam;
     private bool _isMainCamNull;
 
+    private bool _isDrag;
+    private HexDirection _dragDirection;
+    private HexCell _previousCell;
+    
+    private enum OptionalToggle
+    {
+        Ignore, No, Yes
+    }
+
+    private OptionalToggle riverMode;
+
     private void Awake()
     {
         SelectColor(-1);
@@ -31,8 +43,9 @@ public class HexMapEditor : MonoBehaviour
     private void Update()
     {
         _mouseOnUI = EventSystem.current.IsPointerOverGameObject(PointerInputModule.kMouseLeftId);
-        
-        if(onClick.IsPressed()) HandleInput();
+
+        if (onClick.IsPressed()) HandleInput();
+        else _previousCell = null;
     }
 
     private void OnEnable()
@@ -47,13 +60,45 @@ public class HexMapEditor : MonoBehaviour
 
     private void HandleInput()
     {
-        if (_mouseOnUI || _isMainCamNull) return;
+        if (_mouseOnUI || _isMainCamNull)
+        {
+            _previousCell = null;
+            return;
+        }
         
         Ray inputRay = _mainCam.ScreenPointToRay(Mouse.current.position.ReadValue());
         if (Physics.Raycast(inputRay, out RaycastHit hit))
         {
-            EditCells(hexGrid.GetCell(hit.point));
+            HexCell currentCell = hexGrid.GetCell(hit.point);
+            if (_previousCell && _previousCell != currentCell)
+            {
+                ValidateDrag(currentCell);
+            }
+            else
+            {
+                _isDrag = false;
+            }
+            EditCells(currentCell);
+            _previousCell = currentCell;
         }
+        else
+        {
+            _previousCell = null;
+        }
+    }
+
+    private void ValidateDrag(HexCell currentCell)
+    {
+        for (_dragDirection = HexDirection.NE; _dragDirection <= HexDirection.NW; _dragDirection++)
+        {
+            if (_previousCell.GetNeighbor(_dragDirection) == currentCell)
+            {
+                _isDrag = true;
+                return;
+            }
+        }
+
+        _isDrag = false;
     }
 
     private void EditCells(HexCell center)
@@ -91,6 +136,16 @@ public class HexMapEditor : MonoBehaviour
             {
                 cell.Elevation = _activeElevation;
             }
+
+            if (riverMode == OptionalToggle.No)
+            {
+                cell.RemoveRiver();
+            } else if (_isDrag && riverMode == OptionalToggle.Yes)
+            {
+                HexCell otherCell = cell.GetNeighbor(_dragDirection.Opposite());
+                if(otherCell) otherCell.SetOutgoingRiver(_dragDirection);
+                _previousCell.SetOutgoingRiver(_dragDirection);
+            }
         }
     }
 
@@ -123,4 +178,8 @@ public class HexMapEditor : MonoBehaviour
         hexGrid.ShowUI(visible);
     }
 
+    public void SetRiverMode(int mode)
+    {
+        riverMode = (OptionalToggle)mode;
+    }
 }
