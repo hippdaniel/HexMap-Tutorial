@@ -31,7 +31,7 @@ public class HexMapEditor : MonoBehaviour
         Ignore, No, Yes
     }
 
-    private OptionalToggle riverMode;
+    private OptionalToggle _riverMode, _roadMode;
 
     private void Awake()
     {
@@ -137,14 +137,31 @@ public class HexMapEditor : MonoBehaviour
                 cell.Elevation = _activeElevation;
             }
 
-            if (riverMode == OptionalToggle.No)
+            if (_riverMode == OptionalToggle.No)
             {
                 cell.RemoveRiver();
-            } else if (_isDrag && riverMode == OptionalToggle.Yes)
+            }
+
+            if (_roadMode == OptionalToggle.No)
+            {
+                cell.RemoveRoads();
+            }
+            if (_isDrag)
             {
                 HexCell otherCell = cell.GetNeighbor(_dragDirection.Opposite());
-                if(otherCell) otherCell.SetOutgoingRiver(_dragDirection);
-                _previousCell.SetOutgoingRiver(_dragDirection);
+                if (otherCell)
+                {
+                    if (_riverMode == OptionalToggle.Yes)
+                    {
+                        otherCell.SetOutgoingRiver(_dragDirection);
+                    }
+
+                    if (_roadMode == OptionalToggle.Yes)
+                    {
+                        otherCell.AddRoad(_dragDirection);
+                    }
+
+                }
             }
         }
     }
@@ -180,6 +197,11 @@ public class HexMapEditor : MonoBehaviour
 
     public void SetRiverMode(int mode)
     {
-        riverMode = (OptionalToggle)mode;
+        _riverMode = (OptionalToggle)mode;
+    }
+
+    public void SetRoadMode(int mode)
+    {
+        _roadMode = (OptionalToggle)mode;
     }
 }
