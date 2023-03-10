@@ -1,4 +1,4 @@
-Shader "Custom/HexRiver"
+Shader "Custom/HexWaterShore"
 {
     Properties
     {
@@ -9,7 +9,7 @@ Shader "Custom/HexRiver"
     }
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="Transparent+1" }
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
         LOD 200
 
         CGPROGRAM
@@ -20,12 +20,13 @@ Shader "Custom/HexRiver"
         #pragma target 3.0
 
         #include "Water.cginc"
-        
+
         sampler2D _MainTex;
 
         struct Input
         {
             float2 uv_MainTex;
+            float3 worldPos;
         };
 
         half _Glossiness;
@@ -41,10 +42,13 @@ Shader "Custom/HexRiver"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            float river = River(IN.uv_MainTex, _MainTex);
+            float shore = IN.uv_MainTex.y;
+            shore = sqrt(shore) * 0.9;
+            float foam = Foam(shore, IN.worldPos.xz, _MainTex);
+            float waves = Waves(IN.worldPos.xz, _MainTex);
+            waves *= 1 - shore;
             
-            // Albedo comes from a texture tinted by color
-            fixed4 c = saturate(_Color + river);
+            fixed4 c = saturate(_Color + max(foam, waves));
             o.Albedo = c.rgb;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;

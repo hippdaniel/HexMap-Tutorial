@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class HexMesh : MonoBehaviour
 {
-    public bool useCollider, useColors, useUvCoordinates;
+    public bool useCollider, useColors, useUvCoordinates, useUv2Coordinates;
 
     private Mesh _hexMesh;
     private MeshCollider _meshCollider;
@@ -13,6 +13,7 @@ public class HexMesh : MonoBehaviour
     [NonSerialized] private List<int> _triangles;
     [NonSerialized] private List<Color> _colors;
     [NonSerialized] private List<Vector2> _uvs;
+    [NonSerialized] private List<Vector2> _uv2s;
 
     private void Awake()
     {
@@ -27,7 +28,8 @@ public class HexMesh : MonoBehaviour
         _vertices = ListPool<Vector3>.Get();
         _triangles = ListPool<int>.Get();
         if(useColors) _colors = ListPool<Color>.Get();
-        if (useUvCoordinates) _uvs = ListPool<Vector2>.Get();
+        if(useUvCoordinates) _uvs = ListPool<Vector2>.Get();
+        if (useUv2Coordinates) _uv2s = ListPool<Vector2>.Get();
     }
 
     public void Apply()
@@ -45,6 +47,12 @@ public class HexMesh : MonoBehaviour
         {
             _hexMesh.SetUVs(0, _uvs);
             ListPool<Vector2>.Add(_uvs);
+        }
+
+        if (useUv2Coordinates)
+        {
+            _hexMesh.SetUVs(1, _uv2s);
+            ListPool<Vector2>.Add(_uv2s);
         }
         
         _hexMesh.SetTriangles(_triangles, 0);
@@ -95,6 +103,13 @@ public class HexMesh : MonoBehaviour
         _uvs.Add(uv1);
         _uvs.Add(uv2);
         _uvs.Add(uv3);
+    }
+    
+    public void AddTriangleUV2(Vector2 uv1, Vector2 uv2, Vector2 uv3)
+    {
+        _uv2s.Add(uv1);
+        _uv2s.Add(uv2);
+        _uv2s.Add(uv3);
     }
 
     public void AddQuad(Vector3 vec1, Vector3 vec2, Vector3 vec3, Vector3 vec4)
@@ -164,5 +179,21 @@ public class HexMesh : MonoBehaviour
         _uvs.Add(new Vector2(uMax, vMin));
         _uvs.Add(new Vector2(uMin, vMax));
         _uvs.Add(new Vector2(uMax, vMax));
+    }
+    
+    public void AddQuadUV2(Vector2 uv1, Vector2 uv2, Vector2 uv3, Vector2 uv4)
+    {
+        _uv2s.Add(uv1);
+        _uv2s.Add(uv2);
+        _uv2s.Add(uv3);
+        _uv2s.Add(uv4);
+    }
+
+    public void AddQuadUV2(float uMin, float uMax, float vMin, float vMax)
+    {
+        _uv2s.Add(new Vector2(uMin, vMin));
+        _uv2s.Add(new Vector2(uMax, vMin));
+        _uv2s.Add(new Vector2(uMin, vMax));
+        _uv2s.Add(new Vector2(uMax, vMax));
     }
 }

@@ -22,10 +22,10 @@ public class HexGrid : MonoBehaviour
 
     private void Awake()
     {
-        HexMetrics.noiseSource = noiseSource;
+        HexMetrics.NoiseSource = noiseSource;
         
-        _cellCountX = chunkCountX * HexMetrics.chunkSizeX;
-        _cellCountZ = chunkCountZ * HexMetrics.chunkSizeZ;
+        _cellCountX = chunkCountX * HexMetrics.ChunkSizeX;
+        _cellCountZ = chunkCountZ * HexMetrics.ChunkSizeZ;
         
         CreateChunks();
         CreateCells();
@@ -60,7 +60,7 @@ public class HexGrid : MonoBehaviour
 
     private void OnEnable()
     {
-        HexMetrics.noiseSource = noiseSource;
+        HexMetrics.NoiseSource = noiseSource;
     }
 
     private void CreateCell(int x, int z, int i)
@@ -113,13 +113,13 @@ public class HexGrid : MonoBehaviour
 
     private void AddCellToChunk(int x, int z, HexCell cell)
     {
-        int chunkX = x / HexMetrics.chunkSizeX;
-        int chunkZ = z / HexMetrics.chunkSizeZ;
+        int chunkX = x / HexMetrics.ChunkSizeX;
+        int chunkZ = z / HexMetrics.ChunkSizeZ;
         HexGridChunk chunk = _chunks[chunkX + chunkZ * chunkCountX];
 
-        int localX = x - chunkX * HexMetrics.chunkSizeX;
-        int localZ = z - chunkZ * HexMetrics.chunkSizeZ;
-        chunk.AddCell(localX + localZ * HexMetrics.chunkSizeX, cell);
+        int localX = x - chunkX * HexMetrics.ChunkSizeX;
+        int localZ = z - chunkZ * HexMetrics.ChunkSizeZ;
+        chunk.AddCell(localX + localZ * HexMetrics.ChunkSizeX, cell);
     }
 
     public HexCell GetCell(Vector3 position)

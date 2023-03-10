@@ -18,8 +18,9 @@ public class HexCell : MonoBehaviour
     public HexDirection OutgoingRiver => _outgoingRiver;
     public bool HasRiver => _hasIncomingRiver || _hasOutgoingRiver;
     public bool HasRiverBeginOrEnd => _hasIncomingRiver != _hasOutgoingRiver;
-    public float StreamBedBy => (_elevation + HexMetrics.streamBedElevationOffset) * HexMetrics.ElevationStep;
-    public float RiverSurfaceY => (_elevation + HexMetrics.riverSurfaceElevationOffset) * HexMetrics.ElevationStep;
+    public float StreamBedBy => (_elevation + HexMetrics.StreamBedElevationOffset) * HexMetrics.ElevationStep;
+    public float RiverSurfaceY => (_elevation + HexMetrics.WaterElevationOffset) * HexMetrics.ElevationStep;
+    public float WaterSurfaceY => (_waterLevel + HexMetrics.WaterElevationOffset) * HexMetrics.ElevationStep;
     public bool HasRoads
     {
         get
@@ -33,7 +34,6 @@ public class HexCell : MonoBehaviour
         }
     }
     public HexDirection RiverBeginOrEndDirection => _hasIncomingRiver ? _incomingRiver : _outgoingRiver;
-
 
     private Color _color;
     public Color Color
@@ -58,15 +58,14 @@ public class HexCell : MonoBehaviour
             
             Vector3 position = transform.localPosition;
             position.y = value * HexMetrics.ElevationStep;
-            position.y += (HexMetrics.SampleNoise(position).y * 2f - 1f) * HexMetrics.elevationPerturbStrength;
+            position.y += (HexMetrics.SampleNoise(position).y * 2f - 1f) * HexMetrics.ElevationPerturbStrength;
             transform.localPosition = position;
 
             Vector3 uiPosition = uiRect.localPosition;
             uiPosition.z = -position.y;
             uiRect.localPosition = uiPosition;
 
-            if (_hasOutgoingRiver && _elevation < GetNeighbor(_outgoingRiver)._elevation) RemoveOutgoingRiver();
-            if (_hasIncomingRiver && _elevation > GetNeighbor(_incomingRiver)._elevation) RemoveIncomingRiver();
+            ValidateRivers();
 
             for (int i = 0; i < roads.Length; i++)
             {
@@ -80,6 +79,21 @@ public class HexCell : MonoBehaviour
         }
     }
     public Vector3 Position => transform.position;
+
+    private int _waterLevel;
+    public int WaterLevel
+    {
+        get => _waterLevel;
+        set
+        {
+            if (_waterLevel == value) return;
+            
+            _waterLevel = value;
+            ValidateRivers();
+            Refresh();
+        }
+    }
+    public bool IsUnderwater => _waterLevel > _elevation;
     
     private void Refresh()
     {
@@ -96,15 +110,18 @@ public class HexCell : MonoBehaviour
     {
         return neighbors[(int)direction];
     }
+    
     public void SetNeighbor(HexDirection direction, HexCell cell)
     {
         neighbors[(int)direction] = cell;
         cell.neighbors[(int)direction.Opposite()] = this;
     }
+    
     public HexEdgeType GetEdgeType(HexDirection direction)
     {
         return HexMetrics.GetEdgeType(_elevation, neighbors[(int)direction].Elevation);
     }
+    
     public HexEdgeType GetEdgeType(HexCell otherCell)
     {
         return HexMetrics.GetEdgeType(_elevation, otherCell.Elevation);
@@ -114,13 +131,18 @@ public class HexCell : MonoBehaviour
     {
         return _hasIncomingRiver && _incomingRiver == direction || _hasOutgoingRiver && _outgoingRiver == direction;
     }
+    
+    public bool IsValidRiverDestination(HexCell neighbor)
+    {
+        return neighbor && (_elevation >= neighbor._elevation || _waterLevel == neighbor._elevation);
+    }
 
     public void SetOutgoingRiver(HexDirection direction)
     {
         if(_hasOutgoingRiver && _outgoingRiver == direction) return;
 
-        HexCell neightbor = GetNeighbor(direction);
-        if (!neightbor || _elevation < neightbor._elevation) return;
+        HexCell neighbor = GetNeighbor(direction);
+        if (!IsValidRiverDestination(neighbor)) return;
         
         RemoveOutgoingRiver();
         if (_hasIncomingRiver && _incomingRiver == direction)
@@ -131,9 +153,9 @@ public class HexCell : MonoBehaviour
         _hasOutgoingRiver = true;
         _outgoingRiver = direction;
         
-        neightbor.RemoveIncomingRiver();
-        neightbor._hasIncomingRiver = true;
-        neightbor._incomingRiver = direction.Opposite();
+        neighbor.RemoveIncomingRiver();
+        neighbor._hasIncomingRiver = true;
+        neighbor._incomingRiver = direction.Opposite();
         
         SetRoad((int)direction, false);
     }
@@ -211,4 +233,18 @@ public class HexCell : MonoBehaviour
         int difference = _elevation - GetNeighbor(direction)._elevation;
         return difference >= 0 ? difference : -difference;
     }
+    
+    private void ValidateRivers()
+    {
+        if (_hasOutgoingRiver && !IsValidRiverDestination(GetNeighbor(_outgoingRiver)))
+        {
+            RemoveOutgoingRiver();
+        }
+
+        if (_hasIncomingRiver && !GetNeighbor(_incomingRiver).IsValidRiverDestination(this))
+        {
+            RemoveIncomingRiver();
+        }
+    }
+    
 }

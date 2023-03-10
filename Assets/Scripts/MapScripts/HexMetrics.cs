@@ -2,10 +2,10 @@ using UnityEngine;
 
 public static class HexMetrics
 {
-    public const float outerToInner = 0.866025404f;
-    public const float innerToOuter = 1f / outerToInner;
+    public const float OuterToInner = 0.866025404f;
+    public const float InnerToOuter = 1f / OuterToInner;
     public const float OuterRadius = 10f;
-    public const float InnerRadius = OuterRadius * outerToInner;
+    public const float InnerRadius = OuterRadius * OuterToInner;
     public const float SolidFactor = 0.8f;
     public const float BlendFactor = 1f - SolidFactor;
     public const float ElevationStep = 3f;
@@ -13,14 +13,16 @@ public static class HexMetrics
     public const int   TerraceSteps = TerracesPerSlope * 2 + 1;
     public const float HorizontalTerraceStepSize = 1f / (TerraceSteps);
     public const float VerticalTerraceStepSize = 1f / (TerracesPerSlope + 1);
-    public const int chunkSizeX = 5, chunkSizeZ = 5;
-    public const float streamBedElevationOffset = -1.75f;
-    public const float riverSurfaceElevationOffset = -0.5f;
+    public const int   ChunkSizeX = 5, ChunkSizeZ = 5;
+    public const float StreamBedElevationOffset = -1.75f;
+    public const float WaterElevationOffset = -0.5f;
+    public const float WaterFactor = 0.6f;
+    public const float WaterBlendFactor = 1f - WaterFactor;
     
-    public static Texture2D noiseSource;
+    public static Texture2D NoiseSource;
     public const float CellPerturbStrength = 4f;
-    public const float noiseScale = 0.003f;
-    public const float elevationPerturbStrength = 1.5f;
+    public const float NoiseScale = 0.003f;
+    public const float ElevationPerturbStrength = 1.5f;
 
     public static readonly Vector3[] Corners =
     {
@@ -99,7 +101,7 @@ public static class HexMetrics
 
     public static Vector4 SampleNoise(Vector3 position)
     {
-        return noiseSource.GetPixelBilinear(position.x * noiseScale, position.y * noiseScale);
+        return NoiseSource.GetPixelBilinear(position.x * NoiseScale, position.y * NoiseScale);
     }
     
     public static Vector3 Perturb(Vector3 position)
@@ -108,5 +110,20 @@ public static class HexMetrics
         position.x += (sample.x * 2f - 1) * CellPerturbStrength;
         position.z += (sample.z * 2f - 1) * CellPerturbStrength;
         return position;
+    }
+
+    public static Vector3 GetFirstWaterCorner(HexDirection direction)
+    {
+        return Corners[(int)direction] * WaterFactor;
+    }
+
+    public static Vector3 GetSecondWaterCorner(HexDirection direction)
+    {
+        return Corners[(int)direction + 1] * WaterFactor;
+    }
+
+    public static Vector3 GetWaterBridge(HexDirection direction)
+    {
+        return (Corners[(int)direction] + Corners[(int)direction + 1]) * WaterBlendFactor;
     }
 }
