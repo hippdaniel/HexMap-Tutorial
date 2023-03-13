@@ -15,6 +15,8 @@ public class HexGrid : MonoBehaviour
 
     public Color defaultColor = Color.white;
 
+    public int mapSeed;
+
     private int _cellCountX, _cellCountZ;
     
     private HexGridChunk[] _chunks;
@@ -23,6 +25,7 @@ public class HexGrid : MonoBehaviour
     private void Awake()
     {
         HexMetrics.NoiseSource = noiseSource;
+        HexMetrics.InitializeHashGrid(mapSeed);
         
         _cellCountX = chunkCountX * HexMetrics.ChunkSizeX;
         _cellCountZ = chunkCountZ * HexMetrics.ChunkSizeZ;
@@ -60,7 +63,11 @@ public class HexGrid : MonoBehaviour
 
     private void OnEnable()
     {
-        HexMetrics.NoiseSource = noiseSource;
+        if (!HexMetrics.NoiseSource)
+        {
+            HexMetrics.NoiseSource = noiseSource;
+            HexMetrics.InitializeHashGrid(mapSeed);
+        }
     }
 
     private void CreateCell(int x, int z, int i)

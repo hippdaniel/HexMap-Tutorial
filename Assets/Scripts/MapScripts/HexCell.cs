@@ -94,6 +94,48 @@ public class HexCell : MonoBehaviour
         }
     }
     public bool IsUnderwater => _waterLevel > _elevation;
+
+    private int _urbanLevel;
+    public int UrbanLevel
+    {
+        get => _urbanLevel;
+        set
+        {
+            if (_urbanLevel != value)
+            {
+                _urbanLevel = value;
+                RefreshSelfOnly();
+            }
+        }
+    }
+    
+    private int _farmLevel;
+    public int FarmLevel
+    {
+        get => _farmLevel;
+        set
+        {
+            if (_farmLevel != value)
+            {
+                _farmLevel = value;
+                RefreshSelfOnly();
+            }
+        }
+    }
+    
+    private int _plantLevel;
+    public int PlantLevel
+    {
+        get => _plantLevel;
+        set
+        {
+            if (_plantLevel != value)
+            {
+                _plantLevel = value;
+                RefreshSelfOnly();
+            }
+        }
+    }
     
     private void Refresh()
     {

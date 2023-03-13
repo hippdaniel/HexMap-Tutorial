@@ -18,11 +18,15 @@ public static class HexMetrics
     public const float WaterElevationOffset = -0.5f;
     public const float WaterFactor = 0.6f;
     public const float WaterBlendFactor = 1f - WaterFactor;
+    public const int   HashGridSize = 256;
+    public const float HashGridScale = 0.25f;
     
     public static Texture2D NoiseSource;
     public const float CellPerturbStrength = 4f;
     public const float NoiseScale = 0.003f;
     public const float ElevationPerturbStrength = 1.5f;
+    
+    private static HexHash[] _hashGrid;
 
     public static readonly Vector3[] Corners =
     {
@@ -34,6 +38,40 @@ public static class HexMetrics
         new Vector3(-InnerRadius, 0f, 0.5f * OuterRadius),
         new Vector3(0f, 0f, OuterRadius),
     };
+
+    public static void InitializeHashGrid(int seed)
+    {
+        _hashGrid = new HexHash[HashGridSize * HashGridSize];
+        Random.State currentState = Random.state;
+        
+        Random.InitState(seed);
+        for (int i = 0; i < _hashGrid.Length; i++)
+        {
+            _hashGrid[i] = HexHash.Create();
+        }
+
+        Random.state = currentState;
+    }
+
+    private static float[][] featureThreshold =
+    {
+        new float[] { 0.0f, 0.0f, 0.4f },
+        new float[] { 0.0f, 0.4f, 0.6f },
+        new float[] { 0.4f, 0.6f, 0.8f }
+    };
+    public static float[] GetFeatureThresholds(int level)
+    {
+        return featureThreshold[level];
+    }
+
+    public static HexHash SampleHashGrid(Vector3 position)
+    {
+        int x = (int)(position.x * HashGridScale) % HashGridSize;
+        if (x < 0) x += HashGridSize;
+        int z = (int)(position.z * HashGridScale) % HashGridSize;
+        if (z < 0) z += HashGridSize;
+        return _hashGrid[x + z * HashGridSize];
+    }
 
     public static Vector3 GetFirstCorner(HexDirection direction)
     {
